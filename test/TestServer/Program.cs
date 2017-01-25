@@ -38,9 +38,15 @@ namespace TestServer
             try
             {
                 server.DataReceived += new Server.DataReceivedEventHandler(server_DataReceived);
-                server.PSKIdentities.AddIdentity(Encoding.UTF8.GetBytes("oFIrQFrW8EWcZ5u7eGfrkw"), HexToBytes("7CCDE14A5CF3B71C0C08C8B7F9E5"));
-                server.LoadCertificateFromPem("TestServer.pem");
-                server.RequireClientCertificate = true;
+
+                server.PSKIdentities.PSKKeySearch += delegate (object sender, PSKEventArgs e)
+                {
+                    Console.WriteLine("Searching for key for {0}", BitConverter.ToString(e.Identity));
+                    e.Key = new byte[] { 0x7C, 0xCD, 0xE1, 0x4A, 0x5C, 0xF3, 0xB7, 0x1C, 0x0C, 0x08, 0xC8, 0xB7, 0xF9, 0xE5 };
+                };
+
+                //server.LoadCertificateFromPem("TestServer.pem");
+                //server.RequireClientCertificate = true;
                 server.Start();
                 Console.WriteLine("Press any key to stop");
                 Console.ReadKey(true);
@@ -55,18 +61,6 @@ namespace TestServer
                 server.Stop();
 
             }
-        }
-
-        static byte[] HexToBytes(string hex)
-        {
-            byte[] result = new byte[hex.Length / 2];
-            int count = 0;
-            for (int index = 0; index < hex.Length; index += 2)
-            {
-                result[count] = Convert.ToByte(hex.Substring(index, 2), 16);
-                count++;
-            }
-            return result;
         }
 
         static void server_DataReceived(EndPoint endPoint, byte[] data)

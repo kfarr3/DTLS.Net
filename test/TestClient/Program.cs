@@ -32,17 +32,8 @@ namespace TestClient
 {
     public class Program
     {
-        static byte[] HexToBytes(string hex)
-        {
-            byte[] result = new byte[hex.Length / 2];
-            int count = 0;
-            for (int index = 0; index < hex.Length; index += 2)
-            {
-                result[count] = Convert.ToByte(hex.Substring(index, 2), 16);
-                count++;
-            }
-            return result;
-        }
+        static string IP = "127.0.0.1";
+        static byte[] KEY = new byte[] { 0x7C, 0xCD, 0xE1, 0x4A, 0x5C, 0xF3, 0xB7, 0x1C, 0x0C, 0x08, 0xC8, 0xB7, 0xF9, 0xE5 };
 
         public static void Main(string[] args)
         {
@@ -50,10 +41,11 @@ namespace TestClient
             Console.WriteLine("Press any key to Connect to Server");
             Console.ReadKey(true);
             Client client = new Client(new IPEndPoint(IPAddress.Any, 56239));
-            client.PSKIdentities.AddIdentity(Encoding.UTF8.GetBytes("oFIrQFrW8EWcZ5u7eGfrkw"), HexToBytes("7CCDE14A5CF3B71C0C08C8B7F9E5"));
-            //client.LoadCertificateFromPem(@"Client.pem");
+            client.PSKIdentities.AddIdentity(IP, KEY);
+            client.SetVersion(new Version(1, 2));
+
             client.SupportedCipherSuites.Add(TCipherSuite.TLS_PSK_WITH_AES_128_CCM_8);
-            client.ConnectToServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5684));
+            client.ConnectToServer(new IPEndPoint(IPAddress.Parse(IP), 5684));
             Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;

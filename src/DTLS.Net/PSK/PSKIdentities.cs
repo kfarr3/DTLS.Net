@@ -30,9 +30,15 @@ namespace DTLS
 {
     public class PSKIdentities: IEqualityComparer<byte[]>
     {
+        public event EventHandler<PSKEventArgs> PSKKeySearch;
+
         private Dictionary<byte[], PSKIdentity> _Identities;
 
-        public int Count { get {return _Identities.Count;} }
+        public int Count { get
+            {
+                if ((PSKKeySearch != null) && (_Identities.Count == 0)) return 1;
+                else return _Identities.Count;
+            } }
 
         public PSKIdentities()
         {
@@ -58,6 +64,12 @@ namespace DTLS
             if (_Identities.TryGetValue(identity, out pskIdentity))
             {
                 result = pskIdentity.Key;
+            }
+            else if (PSKKeySearch != null)
+            {
+                PSKEventArgs args = new PSKEventArgs(identity);
+                PSKKeySearch(this, args);
+                result = args.Key;
             }
             return result;
         }
